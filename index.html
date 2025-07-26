@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hunger & Obesity Stats</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #000;
+    }
+    canvas {
+      display: block;
+    }
+    @font-face {
+      font-family: 'CooperHewittThin';
+      src: url('assets/CooperHewitt-Thin.otf') format('opentype');
+    }
+  </style>
+</head>
+<body>
+<script>
+let hungerDeaths = 0;
+let obesePeople = 0;
+
+let lastHungerUpdate = 0;
+let hungerInterval = 3500;
+
+let lastObeseUpdate = 0;
+let obeseInterval = 1200;
+
+let customFont;
+
+function preload() {
+  customFont = loadFont('assets/CooperHewitt-Thin.otf');
+}
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  textFont(customFont);
+  textAlign(CENTER, CENTER);
+  noCursor();
+
+  hungerDeaths = getInitialHungerDeaths();
+  obesePeople = getInitialObesePeople();
+}
+
+function draw() {
+  background(20);
+
+  let now = millis();
+
+  if (now - lastHungerUpdate > hungerInterval) {
+    hungerDeaths++;
+    lastHungerUpdate = now;
+  }
+
+  if (now - lastObeseUpdate > obeseInterval) {
+    obesePeople++;
+    lastObeseUpdate = now;
+  }
+
+  fill(255);
+  let numberSize = height * 0.11;
+  let subtextSize = height * 0.04;
+  let lineSpacing = height * 0.04;
+  let blockSpacing = height * 0.08;
+
+  let totalHeight = 2 * (numberSize + subtextSize + lineSpacing) + blockSpacing;
+  let topY = (height - totalHeight) / 2;
+
+  textSize(numberSize);
+  text(formatNumber(hungerDeaths), width / 2, topY + numberSize / 2);
+
+  fill(160);
+  textSize(subtextSize);
+  text("people have died of hunger today", width / 2, topY + numberSize + lineSpacing + subtextSize / 2);
+
+  // Second block
+  let secondBlockY = topY + numberSize + subtextSize + lineSpacing + blockSpacing;
+
+  fill(255);
+  textSize(numberSize);
+  text(formatNumber(obesePeople), width / 2, secondBlockY + numberSize / 2);
+
+  fill(160);
+  textSize(subtextSize);
+  text("people in the world are obese", width / 2, secondBlockY + numberSize + lineSpacing + subtextSize / 2);
+}
+
+function getInitialHungerDeaths() {
+  let now = new Date();
+  let seconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  return Math.floor(seconds / 3.5);
+}
+
+function getInitialObesePeople() {
+  let now = new Date();
+  let seconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  return 1000000000 + Math.floor(seconds / 1.2);
+}
+
+function formatNumber(n) {
+  return n.toLocaleString('en').replace(/,/g, ' ');
+}
+
+function mousePressed() {
+  fullscreen(!fullscreen());
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  setupGrid();
+</script>
+</body>
+</html>
