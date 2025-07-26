@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>CB Hunger & Obesity World Simulation</title>
+  <title>Hunger & Obesity Stats</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
   <style>
     html, body {
@@ -10,6 +10,7 @@
       padding: 0;
       overflow: hidden;
       background: black;
+      touch-action: none;
     }
     canvas {
       display: block;
@@ -38,7 +39,7 @@ function preload() {
   customFont = loadFont('assets/CooperHewitt-Thin.otf', () => {
     fontReady = true;
   }, () => {
-    console.warn("Font failed to load, using default.");
+    console.warn("Font failed to load. Using default.");
     fontReady = false;
   });
 }
@@ -53,7 +54,7 @@ function setup() {
 }
 
 function draw() {
-  background(10);
+  background(20);
 
   if (fontReady) {
     textFont(customFont);
@@ -73,33 +74,34 @@ function draw() {
     lastObeseUpdate = now;
   }
 
-  fill(255);
-  let numberSize = height * 0.11;
-  let subtextSize = height * 0.04;
-  let lineSpacing = height * 0.04;
-  let blockSpacing = height * 0.08;
+  // Responsive sizing based on smaller dimension
+  let minSize = min(width, height);
+
+  let numberSize = minSize * 0.12;
+  let subtextSize = minSize * 0.045;
+  let lineSpacing = minSize * 0.04;
+  let blockSpacing = minSize * 0.08;
 
   let totalHeight = 2 * (numberSize + subtextSize + lineSpacing) + blockSpacing;
   let topY = (height - totalHeight) / 2;
 
-  // Block 1: Hunger
+  fill(255);
   textSize(numberSize);
   text(formatNumber(hungerDeaths), width / 2, topY + numberSize / 2);
 
   fill(160);
   textSize(subtextSize);
-  text("people have died of hunger today simulation", width / 2, topY + numberSize + lineSpacing + subtextSize / 2);
+  text("people have died of hunger today", width / 2, topY + numberSize + lineSpacing + subtextSize / 2);
 
-  // Block 2: Obesity
-  let y2 = topY + numberSize + subtextSize + lineSpacing + blockSpacing;
+  let secondBlockY = topY + numberSize + subtextSize + lineSpacing + blockSpacing;
 
   fill(255);
   textSize(numberSize);
-  text(formatNumber(obesePeople), width / 2, y2 + numberSize / 2);
+  text(formatNumber(obesePeople), width / 2, secondBlockY + numberSize / 2);
 
   fill(160);
   textSize(subtextSize);
-  text("people in the world are obese simulation", width / 2, y2 + numberSize + lineSpacing + subtextSize / 2);
+  text("people in the world are obese", width / 2, secondBlockY + numberSize + lineSpacing + subtextSize / 2);
 }
 
 function getInitialHungerDeaths() {
@@ -126,7 +128,6 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   setupGrid();
 }
-
 </script>
 </body>
 </html>
