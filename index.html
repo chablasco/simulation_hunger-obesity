@@ -106,13 +106,7 @@ function draw() {
   text("estimated global number of obese people", width / 2, secondY + numberSize + lineSpacing + subtextSize / 2);
 
   const thirdY = secondY + numberSize + subtextSize + lineSpacing + blockSpacing;
-
-  fill(255);
-  textSize(numberSize);
-  text(formatNumber(localObesePeople), width / 2, thirdY + numberSize / 2);
-  fill(160);
-  textSize(subtextSize);
-  text("your local counter (stored in this device)", width / 2, thirdY + numberSize + lineSpacing + subtextSize / 2);
+  
 }
 
 function getInitialHungerDeaths() {
