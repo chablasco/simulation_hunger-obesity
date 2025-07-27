@@ -57,17 +57,17 @@ function draw() {
     textFont('monospace');
   }
 
-  let now = millis();
+  let nowMillis = millis();
 
-  if (now - lastHungerUpdate > hungerInterval) {
+  if (nowMillis - lastHungerUpdate > hungerInterval) {
     hungerDeaths++;
-    lastHungerUpdate = now;
+    lastHungerUpdate = nowMillis;
   }
 
-  // Calculate obesePeople based on real time since Jan 1, 2025
-  let currentDate = new Date();
-  let startDate = new Date("2025-01-01T00:00:00Z");
-  let elapsedSeconds = Math.floor((currentDate - startDate) / 1000);
+  // Correctly calculate obesePeople count based on UTC since Jan 1, 2025
+  let now = new Date();
+  let startDate = new Date(Date.UTC(2025, 0, 1, 0, 0, 0)); // Jan 1, 2025 at 00:00:00 UTC
+  let elapsedSeconds = Math.floor((now.getTime() - startDate.getTime()) / 1000);
   let obesePeople = 1000000 + Math.floor(elapsedSeconds / 1.2);
 
   // Responsive sizing based on smaller dimension
