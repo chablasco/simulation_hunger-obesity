@@ -24,13 +24,9 @@
 <body>
 <script>
 let hungerDeaths = 0;
-let obesePeopleStartDate = new Date("2025-01-01T00:00:00Z");
 
 let lastHungerUpdate = 0;
 let hungerInterval = 3500;
-
-let lastObeseUpdate = 0;
-let obeseInterval = 1200;
 
 let customFont;
 let fontReady = false;
@@ -50,7 +46,6 @@ function setup() {
   noCursor();
 
   hungerDeaths = getInitialHungerDeaths();
-  obesePeople = getInitialObesePeople();
 }
 
 function draw() {
@@ -69,10 +64,11 @@ function draw() {
     lastHungerUpdate = now;
   }
 
+  // Calculate obesePeople based on real time since Jan 1, 2025
   let currentDate = new Date();
-  let elapsedSeconds = Math.floor((currentDate - obesePeopleStartDate) / 1000);
+  let startDate = new Date("2025-01-01T00:00:00Z");
+  let elapsedSeconds = Math.floor((currentDate - startDate) / 1000);
   let obesePeople = 1000000 + Math.floor(elapsedSeconds / 1.2);
-  
 
   // Responsive sizing based on smaller dimension
   let minSize = min(width, height);
@@ -91,7 +87,7 @@ function draw() {
 
   fill(160);
   textSize(subtextSize);
-  text("people have died of hunger today simulation", width / 2, topY + numberSize + lineSpacing + subtextSize / 2);
+  text("people in the world have died of hunger today simulation", width / 2, topY + numberSize + lineSpacing + subtextSize / 2);
 
   let secondBlockY = topY + numberSize + subtextSize + lineSpacing + blockSpacing;
 
@@ -110,13 +106,6 @@ function getInitialHungerDeaths() {
   return Math.floor(s / 3.5);
 }
 
-function getInitialObesePeople() {
-  let now = new Date();
-  let start = new Date("2025-01-01T00:00:00Z");
-  let secondsElapsed = Math.floor((now - start) / 1000);
-  return 1000000 + Math.floor(secondsElapsed / 1.2);
-}
-
 function formatNumber(n) {
   return n.toLocaleString('en').replace(/,/g, ' ');
 }
@@ -127,7 +116,6 @@ function mousePressed() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  setupGrid();
 }
 </script>
 </body>
