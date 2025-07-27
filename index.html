@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>CB Global Hunger & Obesity Stas</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@100&display=swap" rel="stylesheet">
   <style>
-    html, body {
+    body {
       margin: 0;
-      padding: 0;
-      background: black;
       overflow: hidden;
+      background: black;
     }
     canvas {
       display: block;
@@ -22,15 +22,18 @@ let hungerDeaths = 0;
 let obesePeople = 0;
 
 let lastHungerUpdate = 0;
-let hungerInterval = 3500;
-
 let lastObeseUpdate = 0;
+let hungerInterval = 3500;
 let obeseInterval = 1200;
+let obesityBase = 1000000000;
+
+let numberSize, subtextSize, lineSpacing, blockSpacing, topY;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   textAlign(CENTER, CENTER);
-  frameRate(30);
+  textFont('CooperHewitt-Thin.otf');
+  setupGrid();
 
   hungerDeaths = getInitialHungerDeaths();
   obesePeople = getInitialObesePeople();
@@ -38,8 +41,8 @@ function setup() {
 
 function draw() {
   background(0);
-  let now = millis();
 
+  let now = millis();
   if (now - lastHungerUpdate > hungerInterval) {
     hungerDeaths++;
     lastHungerUpdate = now;
@@ -50,42 +53,51 @@ function draw() {
     lastObeseUpdate = now;
   }
 
-  let numberSize = height * 0.1;
-  let labelSize = height * 0.035;
-  let spacing = height * 0.05;
-
+  // Hunger Block
   fill(255);
   textSize(numberSize);
-  text(formatNumberWithSpaces(hungerDeaths), width / 2, height / 2 - numberSize - spacing);
+  text(formatNumberWithSpaces(hungerDeaths), width / 2, topY + numberSize / 2);
   fill(160);
-  textSize(labelSize);
-  text("people int he world have died of hunger today simulation", width / 2, height / 2 - spacing / 2);
+  textSize(subtextSize);
+  text("people int he world have died of hunger today simulation", width / 2, topY + numberSize + lineSpacing + subtextSize / 2);
 
+  // Obesity Block
+  let secondBlockY = topY + numberSize + subtextSize + lineSpacing + blockSpacing;
   fill(255);
   textSize(numberSize);
-  text(formatNumberWithSpaces(obesePeople), width / 2, height / 2 + numberSize);
+  text(formatNumberWithSpaces(obesePeople), width / 2, secondBlockY + numberSize / 2);
   fill(160);
-  textSize(labelSize);
-  text("people in the world are obese simulation", width / 2, height / 2 + numberSize + spacing);
+  textSize(subtextSize);
+  text("people in the world are obese simulation", width / 2, secondBlockY + numberSize + lineSpacing + subtextSize / 2);
+}
+
+function setupGrid() {
+  let baseSize = min(width, height);
+  numberSize = baseSize * 0.11;
+  subtextSize = baseSize * 0.035;
+  lineSpacing = subtextSize * 1.2;
+  blockSpacing = subtextSize * 3;
+
+  let totalHeight = 2 * (numberSize + subtextSize + lineSpacing) + blockSpacing;
+  topY = (height - totalHeight) / 2;
 }
 
 function getInitialHungerDeaths() {
   let now = new Date();
   let secondsSinceMidnight = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-  return int(secondsSinceMidnight / 3.5);
+  return Math.floor(secondsSinceMidnight / 3.5);
 }
 
 function getInitialObesePeople() {
-  let base = 1000000;
-  let start = new Date(2025, 0, 1); // Jan 1, 2025 (local time)
-  let now = new Date();
-  let elapsed = (now - start) / 1000; // seconds
-  return base + int(elapsed / 1.2);
+  const base = 1000000000;
+  const start = new Date('2025-01-01T00:00:00Z');
+  const now = new Date();
+  const elapsedSeconds = Math.floor((now - start) / 1000);
+  return base + Math.floor(elapsedSeconds / 1.2);
 }
 
 function formatNumberWithSpaces(n) {
-  let raw = n.toString();
-  return raw.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 }
 
 function mousePressed() {
