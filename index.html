@@ -24,7 +24,6 @@
 <body>
 <script>
 let hungerDeaths = 0;
-
 let lastHungerUpdate = 0;
 let hungerInterval = 3500;
 
@@ -44,7 +43,6 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   textAlign(CENTER, CENTER);
   noCursor();
-
   hungerDeaths = getInitialHungerDeaths();
 }
 
@@ -64,20 +62,18 @@ function draw() {
     lastHungerUpdate = nowMillis;
   }
 
-  // Correctly calculate obesePeople count based on UTC since Jan 1, 2025
-  let now = new Date();
-  let startDate = new Date(Date.UTC(2025, 0, 1, 0, 0, 0)); // Jan 1, 2025 at 00:00:00 UTC
-  let elapsedSeconds = Math.floor((now.getTime() - startDate.getTime()) / 1000);
-  let obesePeople = 1000000 + Math.floor(elapsedSeconds / 1.2);
+  // NEW WORKING OBESITY COUNTER
+  let now = Date.now(); // current time in milliseconds
+  let start = new Date('2025-01-01T00:00:00Z').getTime(); // start time in milliseconds
+  let secondsElapsed = Math.floor((now - start) / 1000);
+  let obesePeople = 1000000 + Math.floor(secondsElapsed / 1.2);
 
-  // Responsive sizing based on smaller dimension
+  // Drawing
   let minSize = min(width, height);
-
   let numberSize = minSize * 0.12;
   let subtextSize = minSize * 0.045;
   let lineSpacing = minSize * 0.04;
   let blockSpacing = minSize * 0.08;
-
   let totalHeight = 2 * (numberSize + subtextSize + lineSpacing) + blockSpacing;
   let topY = (height - totalHeight) / 2;
 
@@ -87,7 +83,7 @@ function draw() {
 
   fill(160);
   textSize(subtextSize);
-  text("people have died of hunger today simulation", width / 2, topY + numberSize + lineSpacing + subtextSize / 2);
+  text("people in the world have died of hunger today simulation", width / 2, topY + numberSize + lineSpacing + subtextSize / 2);
 
   let secondBlockY = topY + numberSize + subtextSize + lineSpacing + blockSpacing;
 
