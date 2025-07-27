@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>CB Global Hunger & Obesity Stats</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@100&display=swap" rel="stylesheet">
   <style>
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
       overflow: hidden;
       background: black;
+      touch-action: none;
     }
     canvas {
       display: block;
+    }
+    @font-face {
+      font-family: 'CooperHewittThin';
+      src: url('assets/CooperHewitt-Thin.otf') format('opentype');
     }
   </style>
 </head>
@@ -22,18 +27,27 @@ let hungerDeaths = 0;
 let obesePeople = 0;
 
 let lastHungerUpdate = 0;
-let lastObeseUpdate = 0;
 let hungerInterval = 3500;
-let obeseInterval = 1200;
-let obesityBase = 1000000000;
 
-let numberSize, subtextSize, lineSpacing, blockSpacing, topY;
+let lastObeseUpdate = 0;
+let obeseInterval = 1200;
+
+let customFont;
+let fontReady = false;
+
+function preload() {
+  customFont = loadFont('assets/CooperHewitt-Thin.otf', () => {
+    fontReady = true;
+  }, () => {
+    console.warn("Font failed to load. Using default.");
+    fontReady = false;
+  });
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   textAlign(CENTER, CENTER);
-  textFont('CooperHewitt-Thin.otf');
-  setupGrid();
+  noCursor();
 
   hungerDeaths = getInitialHungerDeaths();
   obesePeople = getInitialObesePeople();
@@ -42,7 +56,14 @@ function setup() {
 function draw() {
   background(0);
 
+  if (fontReady) {
+    textFont(customFont);
+  } else {
+    textFont('monospace');
+  }
+
   let now = millis();
+
   if (now - lastHungerUpdate > hungerInterval) {
     hungerDeaths++;
     lastHungerUpdate = now;
@@ -53,51 +74,50 @@ function draw() {
     lastObeseUpdate = now;
   }
 
-  // Hunger Block
+  // Responsive sizing based on smaller dimension
+  let minSize = min(width, height);
+
+  let numberSize = minSize * 0.12;
+  let subtextSize = minSize * 0.045;
+  let lineSpacing = minSize * 0.04;
+  let blockSpacing = minSize * 0.08;
+
+  let totalHeight = 2 * (numberSize + subtextSize + lineSpacing) + blockSpacing;
+  let topY = (height - totalHeight) / 2;
+
   fill(255);
   textSize(numberSize);
-  text(formatNumberWithSpaces(hungerDeaths), width / 2, topY + numberSize / 2);
+  text(formatNumber(hungerDeaths), width / 2, topY + numberSize / 2);
+
   fill(160);
   textSize(subtextSize);
-  text("people int he world have died of hunger today simulation", width / 2, topY + numberSize + lineSpacing + subtextSize / 2);
+  text("people in the world have died of hunger today simulation", width / 2, topY + numberSize + lineSpacing + subtextSize / 2);
 
-  // Obesity Block
   let secondBlockY = topY + numberSize + subtextSize + lineSpacing + blockSpacing;
+
   fill(255);
   textSize(numberSize);
-  text(formatNumberWithSpaces(obesePeople), width / 2, secondBlockY + numberSize / 2);
+  text(formatNumber(obesePeople), width / 2, secondBlockY + numberSize / 2);
+
   fill(160);
   textSize(subtextSize);
   text("people in the world are obese simulation", width / 2, secondBlockY + numberSize + lineSpacing + subtextSize / 2);
 }
 
-function setupGrid() {
-  let baseSize = min(width, height);
-  numberSize = baseSize * 0.11;
-  subtextSize = baseSize * 0.035;
-  lineSpacing = subtextSize * 1.2;
-  blockSpacing = subtextSize * 3;
-
-  let totalHeight = 2 * (numberSize + subtextSize + lineSpacing) + blockSpacing;
-  topY = (height - totalHeight) / 2;
-}
-
 function getInitialHungerDeaths() {
   let now = new Date();
-  let secondsSinceMidnight = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-  return Math.floor(secondsSinceMidnight / 3.5);
+  let s = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  return Math.floor(s / 3.5);
 }
 
 function getInitialObesePeople() {
-  const base = 1000000000;
-  const start = new Date('2025-01-01T00:00:00Z');
-  const now = new Date();
-  const elapsedSeconds = Math.floor((now - start) / 1000);
-  return base + Math.floor(elapsedSeconds / 1.2);
+  let now = new Date();
+  let s = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  return 1000000000 + Math.floor(s / 1.2);
 }
 
-function formatNumberWithSpaces(n) {
-  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+function formatNumber(n) {
+  return n.toLocaleString('en').replace(/,/g, ' ');
 }
 
 function mousePressed() {
