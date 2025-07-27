@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Hunger & Obesity Stats</title>
+  <title>CB Hunger & Obesity Stats</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
   <style>
     html, body {
@@ -23,13 +23,14 @@
 <body>
 <script>
 let hungerDeaths = 0;
-let obesePeople = 0;
+let localObesePeople = 0;
+let globalObesePeople = 0;
 
 let lastHungerUpdate = 0;
 let hungerInterval = 3500;
 
-let lastObeseUpdate = 0;
-let obeseInterval = 1200;
+let lastLocalObeseUpdate = 0;
+let localObeseInterval = 1200;
 
 let customFont;
 let fontReady = false;
@@ -45,18 +46,21 @@ function setup() {
 
   hungerDeaths = getInitialHungerDeaths();
 
-  // Try to load previous local progress
-  const stored = localStorage.getItem("obeseCounter");
+  // Load local counter or start from 1,000,000
+  const stored = localStorage.getItem("obeseLocalCounter");
   if (stored) {
-    obesePeople = parseInt(stored);
+    localObesePeople = parseInt(stored);
   } else {
-    obesePeople = calculateGlobalObesityCount();
-    localStorage.setItem("obeseCounter", obesePeople.toString());
+    localObesePeople = 1000000;
+    localStorage.setItem("obeseLocalCounter", localObesePeople.toString());
   }
+
+  // Calculate global counter
+  globalObesePeople = calculateGlobalObesityCount();
 }
 
 function draw() {
-  background(20);
+  background(0);
   if (fontReady) textFont(customFont);
   else textFont('monospace');
 
@@ -67,19 +71,22 @@ function draw() {
     lastHungerUpdate = now;
   }
 
-  if (now - lastObeseUpdate > obeseInterval) {
-    obesePeople++;
-    localStorage.setItem("obeseCounter", obesePeople.toString());
-    lastObeseUpdate = now;
+  if (now - lastLocalObeseUpdate > localObeseInterval) {
+    localObesePeople++;
+    localStorage.setItem("obeseLocalCounter", localObesePeople.toString());
+    lastLocalObeseUpdate = now;
   }
 
-  const minSize = min(width, height);
-  const numberSize = minSize * 0.12;
-  const subtextSize = minSize * 0.045;
-  const lineSpacing = minSize * 0.04;
-  const blockSpacing = minSize * 0.08;
+  // Update global obese people in real time
+  globalObesePeople = calculateGlobalObesityCount();
 
-  const totalHeight = 2 * (numberSize + subtextSize + lineSpacing) + blockSpacing;
+  const minSize = min(width, height);
+  const numberSize = minSize * 0.10;
+  const subtextSize = minSize * 0.038;
+  const lineSpacing = minSize * 0.035;
+  const blockSpacing = minSize * 0.07;
+
+  const totalHeight = 3 * (numberSize + subtextSize + lineSpacing) + 2 * blockSpacing;
   const topY = (height - totalHeight) / 2;
 
   fill(255);
@@ -89,14 +96,23 @@ function draw() {
   textSize(subtextSize);
   text("people have died of hunger today", width / 2, topY + numberSize + lineSpacing + subtextSize / 2);
 
-  const secondBlockY = topY + numberSize + subtextSize + lineSpacing + blockSpacing;
+  const secondY = topY + numberSize + subtextSize + lineSpacing + blockSpacing;
 
   fill(255);
   textSize(numberSize);
-  text(formatNumber(obesePeople), width / 2, secondBlockY + numberSize / 2);
+  text(formatNumber(globalObesePeople), width / 2, secondY + numberSize / 2);
   fill(160);
   textSize(subtextSize);
-  text("people in the world are obese", width / 2, secondBlockY + numberSize + lineSpacing + subtextSize / 2);
+  text("estimated global number of obese people", width / 2, secondY + numberSize + lineSpacing + subtextSize / 2);
+
+  const thirdY = secondY + numberSize + subtextSize + lineSpacing + blockSpacing;
+
+  fill(255);
+  textSize(numberSize);
+  text(formatNumber(localObesePeople), width / 2, thirdY + numberSize / 2);
+  fill(160);
+  textSize(subtextSize);
+  text("your local counter (stored in this device)", width / 2, thirdY + numberSize + lineSpacing + subtextSize / 2);
 }
 
 function getInitialHungerDeaths() {
@@ -105,13 +121,13 @@ function getInitialHungerDeaths() {
   return Math.floor(secondsSinceMidnight / 3.5);
 }
 
-// Calculate global obesity count based on time since Jan 1, 2025
+// Real-time global counter based on Jan 1, 2025 start
 function calculateGlobalObesityCount() {
   const base = 1_000_000_000;
-  const start = new Date("2025-01-01T00:00:00Z").getTime();
+  const startTime = new Date("2025-01-01T00:00:00Z").getTime();
   const now = Date.now();
-  const secondsElapsed = Math.floor((now - start) / 1000);
-  return base + Math.floor(secondsElapsed / 1.2); // one new case every 1.2 seconds
+  const elapsedSeconds = Math.floor((now - startTime) / 1000);
+  return base + Math.floor(elapsedSeconds / 1.2);
 }
 
 function formatNumber(n) {
