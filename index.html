@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>CB Global Hunger & Obesity Stats</title>
+  <title>Hunger & Obesity Stats</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
   <style>
     html, body {
@@ -10,7 +10,6 @@
       padding: 0;
       overflow: hidden;
       background: black;
-      touch-action: none;
     }
     canvas {
       display: block;
@@ -36,12 +35,7 @@ let customFont;
 let fontReady = false;
 
 function preload() {
-  customFont = loadFont('assets/CooperHewitt-Thin.otf', () => {
-    fontReady = true;
-  }, () => {
-    console.warn("Font failed to load. Using default.");
-    fontReady = false;
-  });
+  customFont = loadFont('assets/CooperHewitt-Thin.otf', () => fontReady = true, () => fontReady = false);
 }
 
 function setup() {
@@ -50,19 +44,23 @@ function setup() {
   noCursor();
 
   hungerDeaths = getInitialHungerDeaths();
-  obesePeople = getInitialObesePeople();
+
+  // Try to load previous local progress
+  const stored = localStorage.getItem("obeseCounter");
+  if (stored) {
+    obesePeople = parseInt(stored);
+  } else {
+    obesePeople = calculateGlobalObesityCount();
+    localStorage.setItem("obeseCounter", obesePeople.toString());
+  }
 }
 
 function draw() {
-  background(0);
+  background(20);
+  if (fontReady) textFont(customFont);
+  else textFont('monospace');
 
-  if (fontReady) {
-    textFont(customFont);
-  } else {
-    textFont('monospace');
-  }
-
-  let now = millis();
+  const now = millis();
 
   if (now - lastHungerUpdate > hungerInterval) {
     hungerDeaths++;
@@ -71,63 +69,57 @@ function draw() {
 
   if (now - lastObeseUpdate > obeseInterval) {
     obesePeople++;
+    localStorage.setItem("obeseCounter", obesePeople.toString());
     lastObeseUpdate = now;
   }
 
-  // Responsive sizing based on smaller dimension
-  let minSize = min(width, height);
+  const minSize = min(width, height);
+  const numberSize = minSize * 0.12;
+  const subtextSize = minSize * 0.045;
+  const lineSpacing = minSize * 0.04;
+  const blockSpacing = minSize * 0.08;
 
-  let numberSize = minSize * 0.12;
-  let subtextSize = minSize * 0.045;
-  let lineSpacing = minSize * 0.04;
-  let blockSpacing = minSize * 0.08;
-
-  let totalHeight = 2 * (numberSize + subtextSize + lineSpacing) + blockSpacing;
-  let topY = (height - totalHeight) / 2;
+  const totalHeight = 2 * (numberSize + subtextSize + lineSpacing) + blockSpacing;
+  const topY = (height - totalHeight) / 2;
 
   fill(255);
   textSize(numberSize);
   text(formatNumber(hungerDeaths), width / 2, topY + numberSize / 2);
-
   fill(160);
   textSize(subtextSize);
   text("people have died of hunger today", width / 2, topY + numberSize + lineSpacing + subtextSize / 2);
 
-  let secondBlockY = topY + numberSize + subtextSize + lineSpacing + blockSpacing;
+  const secondBlockY = topY + numberSize + subtextSize + lineSpacing + blockSpacing;
 
   fill(255);
   textSize(numberSize);
   text(formatNumber(obesePeople), width / 2, secondBlockY + numberSize / 2);
-
   fill(160);
   textSize(subtextSize);
   text("people in the world are obese", width / 2, secondBlockY + numberSize + lineSpacing + subtextSize / 2);
 }
 
 function getInitialHungerDeaths() {
-  let now = new Date();
-  let s = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-  return Math.floor(s / 3.5);
+  const now = new Date();
+  const secondsSinceMidnight = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  return Math.floor(secondsSinceMidnight / 3.5);
 }
 
-function getInitialObesePeople() {
-  const startDate = new Date('2025-01-01T00:00:00Z');
-  const now = new Date();
-  const secondsElapsed = Math.floor((now - startDate) / 1000);
-  return 1000000 + Math.floor(secondsElapsed / 1.2);
+// Calculate global obesity count based on time since Jan 1, 2025
+function calculateGlobalObesityCount() {
+  const base = 1_000_000_000;
+  const start = new Date("2025-01-01T00:00:00Z").getTime();
+  const now = Date.now();
+  const secondsElapsed = Math.floor((now - start) / 1000);
+  return base + Math.floor(secondsElapsed / 1.2); // one new case every 1.2 seconds
 }
 
 function formatNumber(n) {
   return n.toLocaleString('en').replace(/,/g, ' ');
 }
 
-function mousePressed() {
-  fullscreen(!fullscreen());
-}
-
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  setupGrid();
 }
 </script>
 </body>
