@@ -1,23 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>CB Hunger & Obesity Stats</title>
+  <meta charset="UTF-8">
+  <title>CB Global Obesity & Hunger Stats</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
       background: black;
-      touch-action: none;
+      overflow: hidden;
     }
     canvas {
       display: block;
-    }
-    @font-face {
-      font-family: 'CooperHewittThin';
-      src: url('assets/CooperHewitt-Thin.otf') format('opentype');
     }
   </style>
 </head>
@@ -32,28 +27,25 @@ let hungerInterval = 3500;
 let lastObeseUpdate = 0;
 let obeseInterval = 1200;
 
-let customFont;
-let fontReady = false;
+let font;
 
 function preload() {
-  customFont = loadFont('assets/CooperHewitt-Thin.otf', () => fontReady = true, () => fontReady = false);
+  font = loadFont("assets/CooperHewitt-Thin.otf");
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  textFont(font);
   textAlign(CENTER, CENTER);
-  noCursor();
 
   hungerDeaths = getInitialHungerDeaths();
-  obesePeople = loadObeseCounter(); // Load persistent value
+  obesePeople = getInitialObesePeople();
 }
 
 function draw() {
   background(0);
-  if (fontReady) textFont(customFont);
-  else textFont('monospace');
 
-  const now = millis();
+  let now = millis();
 
   if (now - lastHungerUpdate > hungerInterval) {
     hungerDeaths++;
@@ -62,58 +54,53 @@ function draw() {
 
   if (now - lastObeseUpdate > obeseInterval) {
     obesePeople++;
-    saveObeseCounter(obesePeople); // Persist to localStorage
     lastObeseUpdate = now;
   }
 
-  const minSize = min(width, height);
-  const numberSize = minSize * 0.12;
-  const subtextSize = minSize * 0.045;
-  const lineSpacing = minSize * 0.04;
-  const blockSpacing = minSize * 0.08;
-
-  const totalHeight = 2 * (numberSize + subtextSize + lineSpacing) + blockSpacing;
-  const topY = (height - totalHeight) / 2;
-
-  // Hunger line
   fill(255);
+  let numberSize = height * 0.11;
+  let subtextSize = height * 0.04;
+  let lineSpacing = height * 0.04;
+  let blockSpacing = height * 0.08;
+
+  let totalHeight = 2 * (numberSize + subtextSize + lineSpacing) + blockSpacing;
+  let topY = (height - totalHeight) / 2;
+
+  // Line 1: Hunger
   textSize(numberSize);
   text(formatNumber(hungerDeaths), width / 2, topY + numberSize / 2);
-
   fill(160);
   textSize(subtextSize);
-  text("people have died of hunger today", width / 2, topY + numberSize + lineSpacing + subtextSize / 2);
+  text("people have died of hunger today simulation", width / 2, topY + numberSize + lineSpacing + subtextSize / 2);
 
-  // Obesity line
-  const secondBlockY = topY + numberSize + subtextSize + lineSpacing + blockSpacing;
-
+  // Line 2: Obesity
+  let secondBlockY = topY + numberSize + subtextSize + lineSpacing + blockSpacing;
   fill(255);
   textSize(numberSize);
   text(formatNumber(obesePeople), width / 2, secondBlockY + numberSize / 2);
-
   fill(160);
   textSize(subtextSize);
-  text("people in the world are obese", width / 2, secondBlockY + numberSize + lineSpacing + subtextSize / 2);
+  text("people in the world are obese simulation", width / 2, secondBlockY + numberSize + lineSpacing + subtextSize / 2);
 }
 
 function getInitialHungerDeaths() {
-  const now = new Date();
-  const secondsSinceMidnight = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  let now = new Date();
+  let secondsSinceMidnight = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
   return Math.floor(secondsSinceMidnight / 3.5);
 }
 
-// Persistent local storage: get saved obesity count or default
-function loadObeseCounter() {
-  const stored = localStorage.getItem("obeseCounter");
-  return stored ? parseInt(stored) : 1000000000; // Start from base if none saved
-}
-
-function saveObeseCounter(value) {
-  localStorage.setItem("obeseCounter", value.toString());
+function getInitialObesePeople() {
+  let base = 1000000000;
+  let secondsPerPerson = 1.2;
+  let startDate = new Date("2025-01-01T00:00:00Z");
+  let now = new Date();
+  let elapsed = (now.getTime() - startDate.getTime()) / 1000;
+  if (elapsed < 0) elapsed = 0;
+  return base + Math.floor(elapsed / secondsPerPerson);
 }
 
 function formatNumber(n) {
-  return n.toLocaleString('en').replace(/,/g, ' ');
+  return n.toLocaleString("en-US");
 }
 
 function mousePressed() {
